@@ -56,7 +56,7 @@ const data = [
   }
 ]
 const word = ["APPLE","HEAD","PLACE","SPACE","HELP"];
-let showData = [{"word": "APPLE"}];
+let showData = [];
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -72,7 +72,7 @@ export default class App extends PureComponent {
     console.log(word.find((data)=> data===this.state.clickedData));
     
     if(word.find((data)=> data===this.state.clickedData)){
-      alert('dada')
+      alert('Good')
       let wordAdd ={
         word:this.state.clickedData,
         count: this.state.clickedData.length
