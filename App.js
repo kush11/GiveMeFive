@@ -69,20 +69,29 @@ export default class App extends PureComponent {
     };
   }
 
-  addData = (data) => {
+  addData = (resData,id) => {
+    data.forEach((res) => {
+      console.log(res.word);
+      if (res.word === resData && res.id === id) {
+        res.color = 'red';
+        res.disabled = true
+      }
+      console.log("after change", data);
+    });
     this.setState((prevState, props) => {
-      return { clickedData: prevState.clickedData + data };
+      return { clickedData: prevState.clickedData + resData };
     })
+    
   }
 
   renderItem1 = ({ item }) => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        <View style={{ alignSelf: 'flex-start', justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{flex:2, justifyContent: 'center', paddingLeft:30 }}>
           <Text style={{ fontSize: 25 }}>{item.word}</Text>
         </View>
-        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <Circle word={item.count} />
+        <View style={{ flex:1,justifyContent: 'center', alignItems: 'center' }}>
+          <Circle word={item.count} color={'red'}/>
         </View>
       </View>
     )
@@ -92,9 +101,11 @@ export default class App extends PureComponent {
     return (
       <TouchableOpacity onPress={() => {
         // alert(item.word);
-        this.addData(item.word)
-      }}>
-        <Circle word={item.word} color={'red'} />
+        this.addData(item.word,item.id)
+      }}
+      disabled={item.disabled}
+      >
+        <Circle word={item.word}  />
       </TouchableOpacity>
     );
   };
@@ -170,23 +181,33 @@ export default class App extends PureComponent {
             />
           </View>
           {this.state.clickedData !== '' ?
-            <View style={{ flex: 0.5, flexDirection: 'row' }}>
+            <View style={{ flex: 0.5, flexDirection: 'row', paddingLeft: 50 }}>
               <View style={styles.bottom}>
-                <Text>{`${this.state.clickedData}`}</Text>
+                <Text style={{ fontSize: 20 }}>{`${this.state.clickedData}`}</Text>
               </View>
               <View style={{
-                flexDirection: 'row'
+                flexDirection: 'row',
+                flex: 1,
+                justifyContent:'space-between'
               }}>
-                <Button
-                  title="Cancel"
-                  onPress={() => this.cancelled()}
-                  style={{ color: 'red', borderRadius: 25, marginRight: 5 }}
-                />
-                <Button
-                  title="OK"
-                  onPress={() => this.pushData()}
-                />
+                <View style={{flex:1}}>
+                  <TouchableOpacity
+                    onPress={() => this.cancelled()}
+                    style={{ flex: 1, backgroundColor: 'red', borderRadius: 12, borderWidth: 2, justifyContent: 'center', alignItems: 'center' }}
+                  >
+                    <Text>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={{flex:1}}>
+                  <TouchableOpacity
+                    style={{ flex: 1, backgroundColor: 'green', borderRadius: 12, borderWidth: 2, justifyContent: 'center', alignItems: 'center' }}
+                    onPress={() => this.pushData()}
+                  >
+                    <Text>OK</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
+
             </View> : null
           }
           <View style={{ flex: 2 }}>
@@ -197,7 +218,7 @@ export default class App extends PureComponent {
             />
           </View>
         </View>
-        <View style={{ flex: 3 }}>
+        <View style={{ flex: 2.5 }}>
           <Image
             style={{ width: "100%", height: 200, resizeMode: 'cover' }}
             source={require('./assets/pick.png')}
@@ -230,6 +251,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5
   },
   bottom: {
-    flex: 0.5
+    flex: 2.5,
+    justifyContent: "center",
+    alignItems: 'center'
   },
 })
