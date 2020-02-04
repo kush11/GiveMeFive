@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image,ImageBackground, TouchableOpacity, Button, Alert } from 'react-native';
 import Circle from './circle';
 import * as Progress from 'react-native-progress';
+import Icon from 'react-native-vector-icons/FontAwesome'
 
 const formatData = (data, numColumns) => {
   const numberOfFullRows = Math.floor(data.length / numColumns);
@@ -65,11 +66,13 @@ export default class App extends PureComponent {
       wordCount: 0,
       letterCount: 0,
       addedWord: false,
-      showData: []
+      showData: [],
+      deleted: false,
+      deletedOrder: []
     };
   }
 
-  addData = (resData,id) => {
+  addData = (resData, id) => {
     data.forEach((res) => {
       console.log(res.word);
       if (res.word === resData && res.id === id) {
@@ -81,31 +84,35 @@ export default class App extends PureComponent {
     this.setState((prevState, props) => {
       return { clickedData: prevState.clickedData + resData };
     })
-    
+
   }
 
   renderItem1 = ({ item }) => {
-    return (
-      <View style={{ flexDirection: 'row' }}>
-        <View style={{flex:2, justifyContent: 'center', paddingLeft:30 }}>
-          <Text style={{ fontSize: 25 }}>{item.word}</Text>
+    if (item.status === 'active') {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ flex: 2, justifyContent: 'center', paddingLeft: 30 }}>
+            <Text style={{ fontSize: 25 }}>{item.word}</Text>
+          </View>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Circle word={item.count} color={'red'} />
+          </View>
+          <View style={{ flex: 0.5, justifyContent: 'center', alignItems: 'center' }}>
+            <Icon size={25} name="close" color={'red'} onPress={() => this.deleteWord(item)}></Icon>
+          </View>
         </View>
-        <View style={{ flex:1,justifyContent: 'center', alignItems: 'center' }}>
-          <Circle word={item.count} color={'red'}/>
-        </View>
-      </View>
-    )
+      )
+    }
   }
 
   renderItem = ({ item }) => {
     return (
       <TouchableOpacity onPress={() => {
         // alert(item.word);
-        this.addData(item.word,item.id)
+        this.addData(item.word, item.id)
       }}
-      disabled={item.disabled}
       >
-        <Circle word={item.word}  />
+        <Circle word={item.word} />
       </TouchableOpacity>
     );
   };
@@ -120,7 +127,8 @@ export default class App extends PureComponent {
   pushData = () => {
     let wordAdd = {
       word: this.state.clickedData,
-      count: this.state.clickedData.length
+      count: this.state.clickedData.length,
+      status: 'active'
     };
     this.setState((prevState, props) => {
       return {
@@ -131,6 +139,29 @@ export default class App extends PureComponent {
     })
   }
 
+  undoData = () => {
+    let undoedWord = this.state.deletedOrder.pop();
+    this.state.showData.filter((item) => {
+      item.word === undoedWord.word ? item.status = 'active' : null
+    })
+    this.setState((prevState, props) => {
+      return {
+        wordCount: prevState.wordCount + 1,
+        deleted: this.state.deletedOrder.length != 0 ? true : false
+      };
+    })
+  }
+
+  deleteWord = (item) => {
+    item.status = 'inactive';
+    this.setState((prevState, props) => {
+      return {
+        wordCount: prevState.wordCount - 1,
+        deleted: true,
+        deletedOrder: [...this.state.deletedOrder, item]
+      };
+    })
+  }
   onOkPressed = () => {
     this.setState((prevState, props) => {
       return {
@@ -142,22 +173,6 @@ export default class App extends PureComponent {
   }
 
   render() {
-    if (this.state.wordCount === 5) {
-      return (
-        <View>
-          <Text style={{ fontSize: 35, color: 'red' }}>Give me Five</Text>
-          {Alert.alert(
-            'Successfully Submitted...!!',
-            'Restart the application...!!',
-            [
-              { text: 'Cancel', onPress: () => console.log('Cancel Pressed!') },
-              { text: 'OK', onPress: this.onOkPressed },
-            ],
-            { cancelable: false }
-          )}
-        </View>
-      )
-    }
     return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -166,7 +181,7 @@ export default class App extends PureComponent {
         <View>
           <Progress.Bar
             style={styles.progBar}
-            progress={this.state.showData.length / 5}
+            progress={this.state.showData.filter((item) => item.status === 'active').length / 5}
             width={null}
             color="red"
             unfilledColor="#ffffff"
@@ -178,6 +193,7 @@ export default class App extends PureComponent {
               data={formatData(data, numColumns)}
               renderItem={this.renderItem}
               numColumns={numColumns}
+              keyExtractor={item => item.id}
             />
           </View>
           {this.state.clickedData !== '' ?
@@ -188,9 +204,9 @@ export default class App extends PureComponent {
               <View style={{
                 flexDirection: 'row',
                 flex: 1,
-                justifyContent:'space-between'
+                justifyContent: 'space-between'
               }}>
-                <View style={{flex:1}}>
+                <View style={{ flex: 1 }}>
                   <TouchableOpacity
                     onPress={() => this.cancelled()}
                     style={{ flex: 1, backgroundColor: 'red', borderRadius: 12, borderWidth: 2, justifyContent: 'center', alignItems: 'center' }}
@@ -198,7 +214,7 @@ export default class App extends PureComponent {
                     <Text>Cancel</Text>
                   </TouchableOpacity>
                 </View>
-                <View style={{flex:1}}>
+                <View style={{ flex: 1 }}>
                   <TouchableOpacity
                     style={{ flex: 1, backgroundColor: 'green', borderRadius: 12, borderWidth: 2, justifyContent: 'center', alignItems: 'center' }}
                     onPress={() => this.pushData()}
@@ -210,20 +226,53 @@ export default class App extends PureComponent {
 
             </View> : null
           }
-          <View style={{ flex: 2 }}>
+          <View style={{ flex: 5.5 }}>
             <FlatList
+              extraData={this.state.wordCount}
               data={this.state.showData}
-              style={{ padding: 5 }}
               renderItem={this.renderItem1}
+              keyExtractor={item => item.key}
+            />
+            <Image
+              style={{
+                height: '50%',
+                width: '100%',
+                backgroundColor: 'transparent',
+                position: "absolute",
+                bottom: 0,
+                
+              }}
+              source={require('./assets/pick.png')}
             />
           </View>
+          {this.state.deleted ?
+            <TouchableOpacity
+              style={{
+                height: 60,
+                width: 60,
+                backgroundColor: 'gray',
+                position: "absolute",
+                bottom: 20,
+                right: 20,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 30,
+              }}
+              onPress={() => this.undoData()}
+            >
+              <Icon size={25} name="undo" color={'red'} onPress={() => this.undoData()}></Icon>
+              <Text style={{ size: 30 }}>Undo</Text>
+            </TouchableOpacity> : null}
         </View>
-        <View style={{ flex: 2.5 }}>
-          <Image
-            style={{ width: "100%", height: 200, resizeMode: 'cover' }}
-            source={require('./assets/pick.png')}
-          />
-        </View>
+        {this.state.wordCount === 5 ? Alert.alert(
+          'Successfully Submitted...!!',
+          'Restart the application...!!',
+          [
+            { text: 'Cancel', onPress: () => console.log('Cancel Pressed!') },
+            { text: 'OK', onPress: this.onOkPressed },
+          ],
+          { cancelable: false }
+        ) : null}
       </View >
     );
   }
