@@ -82,6 +82,28 @@ project.ext.react = [
 
 apply from: "../../node_modules/react-native/react.gradle"
 
+project.ext.vectoricons = [
+    iconFontNames: [ 
+    'SimpleLineIcons.ttf',
+    'Ionicons.ttf',
+    'FontAwesome.ttf', 
+    'FontAwesome5_Regular.ttf', 
+    'FontAwesome5_Brands.ttf',
+    'FontAwesome5_Solid.ttf',
+    'FontAwesome5.ttf',
+    'MaterialCommunityIcons.ttf',
+    'Feather.ttf',
+    'Entypo.ttf',
+    'MaterialIcons.ttf',
+    'AntDesign.ttf',
+    'Octicons.ttf',
+    'EvilIcons.ttf',
+    'cholesterol.ttf',
+    'Foundation.ttf'
+    ] // Name of the font files you want to copy
+]
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 /**
  * Set this to true to create two separate APKs instead of one:
  *   - An APK that only works on ARM devices
@@ -181,7 +203,7 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
-
+    compile project(':react-native-vector-icons')
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")
