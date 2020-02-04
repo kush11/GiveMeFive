@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { View, Text, StyleSheet, FlatList , Image, TouchableOpacity} from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import Circle from './circle';
 const formatData = (data, numColumns) => {
   const numberOfFullRows = Math.floor(data.length / numColumns);
@@ -13,7 +13,7 @@ const formatData = (data, numColumns) => {
   return data;
 };
 const numColumns = 5;
-const data = [
+let data = [
   {
     "id": '1',
     "word": "P"
@@ -55,87 +55,140 @@ const data = [
     "word": "D"
   }
 ]
-const word = ["APPLE","HEAD","PLACE","SPACE","HELP"];
+let copyData = [
+  {
+    "id": '1',
+    "word": "P"
+  },
+  {
+    "id": '2',
+    "word": "L"
+  },
+  {
+    "id": '3',
+    "word": "P"
+  },
+  {
+    "id": '4',
+    "word": "T"
+  },
+  {
+    "id": '5',
+    "word": "S"
+  },
+  {
+    "id": '6',
+    "word": "A"
+  },
+  {
+    "id": '7',
+    "word": "C"
+  },
+  {
+    "id": '8',
+    "word": "E"
+  },
+  {
+    "id": '9',
+    "word": "H"
+  },
+  {
+    "id": '10',
+    "word": "D"
+  }
+]
+const word = ["APPLE", "HEAD", "PLACE", "SPACE", "HELP"];
 let showData = [];
 
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      clickedData:''
+      clickedData: ''
     };
   }
 
-  addData =(data)=>{
-    let add = this.state.clickedData.concat(data);
-    this.setState({clickedData:add})
-    console.log(word.find((data)=> data===this.state.clickedData));
-    
-    if(word.find((data)=> data===this.state.clickedData)){
+  addData = (dataRes, id) => {
+    data.forEach((res) => {
+      console.log(res.word);
+      if (res.word === dataRes && res.id === id) {
+        res.color = 'red';
+        res.disabled = true
+      }
+      console.log("after change", data);
+    });
+    let add = this.state.clickedData.concat(dataRes);
+    this.setState({ clickedData: add },console.log("dadadda",this.state.clickedData))
+    console.log(word.find((dataRes) => dataRes === this.state.clickedData));
+
+    if (word.find((dataRes) => dataRes === add)) {
       alert('Good')
-      let wordAdd ={
-        word:this.state.clickedData,
-        count: this.state.clickedData.length
+      let wordAdd = {
+        word: add,
+        count: add.length
       };
       showData.push(wordAdd);
       console.log(showData);
-      this.setState({clickedData:''})
+      add='';
+      data = copyData;
     }
     console.log(this.state.clickedData)
-}
+  }
 
-renderItem1 = ({item}) =>{
-  return(
-    <View style={{height:70, flexDirection:'row'}}>
-      <View style={{padding:10,flex:2, justifyContent:'center'}}>
-        <Text style={{fontSize:25}}>{item.word}</Text>
+  renderItem1 = ({ item }) => {
+    return (
+      <View style={{ height: 70, flexDirection: 'row' }}>
+        <View style={{ padding: 10, flex: 2, justifyContent: 'center' }}>
+          <Text style={{ fontSize: 25 }}>{item.word}</Text>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Circle word={item.count} color={'red'} />
+        </View>
       </View>
-      <View style={{flex:1, justifyContent:'center',alignItems:'center'}}>
-        <Circle word={item.count}/>
-      </View>
-    </View>
-  )
-}
+    )
+  }
 
   renderItem = ({ item }) => {
     return (
-      <TouchableOpacity onPress={()=>{
+      <TouchableOpacity onPress={() => {
         // alert(item.word);
-        this.addData(item.word)
-      }}>
-          <Circle word={item.word} color={'red'}/>
+        this.addData(item.word, item.id)
+      }}
+        disabled={item.disabled}
+        >
+        <Circle word={item.word} color={item.color} />
       </TouchableOpacity>
     );
   };
- 
+
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={{ fontSize: 35, color:'red' }}>Give me Five</Text>
+          <Text style={{ fontSize: 35, color: 'red' }}>Give me Five</Text>
         </View>
         <View style={styles.center}>
           <View style={styles.top}>
             <FlatList
               data={formatData(data, numColumns)}
-              style={{padding:5}}
+              style={{ padding: 5 }}
               renderItem={this.renderItem}
               numColumns={numColumns}
             />
           </View>
           <View style={styles.bottom}>
-          <FlatList
+            <FlatList
               data={showData}
-              style={{padding:5}}
+              style={{ padding: 5 }}
               renderItem={this.renderItem1}
-            />   
+            />
           </View>
         </View>
         <View style={styles.footer}>
-        <Image
-          style={{width:"100%",height: 200,resizeMode: 'cover'}}
-          source={require('./assets/pick.png')}
-        />
+          <Image
+            style={{ width: "100%", height: 200, resizeMode: 'cover' }}
+            source={require('./assets/pick.png')}
+          />
         </View>
       </View>
     );
@@ -150,8 +203,8 @@ const styles = StyleSheet.create({
     flex: 0.5,
     paddingLeft: 25,
     justifyContent: 'flex-end',
-    borderBottomWidth:10,
-    borderBottomColor:'red'
+    borderBottomWidth: 10,
+    borderBottomColor: 'red'
   },
   center: {
     flex: 3
