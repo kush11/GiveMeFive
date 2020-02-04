@@ -5,7 +5,8 @@ const circle = ({
     word = 'Default',color
 }) => (
         <View style={{padding:10}}>
-            <View style={[{...styles.circle, backgroundColor: color ? 'transparent' : 'red'}]}>
+            <View style={[{...styles.circle, 
+                backgroundColor: color ? 'red' : 'transparent'}]}>
                 <Text>{word}</Text>
             </View>
         </View>

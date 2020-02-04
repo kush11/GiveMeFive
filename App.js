@@ -15,7 +15,7 @@ const formatData = (data, numColumns) => {
   return data;
 };
 const numColumns = 5;
-const data = [
+let data = [
   {
     "id": '1',
     "word": "P"
