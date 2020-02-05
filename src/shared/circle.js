@@ -9,7 +9,7 @@ const circle = ({
                 ...styles.circle,
                 backgroundColor: color ? 'red' : 'transparent'
             }]}>
-                <Text style={{ fontSize: 20 }}>{word}</Text>
+                <Text style={{ fontSize: 25 }}>{word}</Text>
             </View>
         </View>
     );

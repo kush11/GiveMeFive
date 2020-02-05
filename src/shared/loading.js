@@ -16,7 +16,7 @@ class Loading extends PureComponent {
           </Text>
                 </View>
                 <View style={{ top: 70 }}>
-                    <Progress.Bar progress={0.3} height={8} width={280} color="#41ab3e" animationType="timing" indeterminate={true} />
+                    <Progress.Bar progress={0.8} height={8} width={280} color="#41ab3e" animationType="timing" indeterminate={true} />
                 </View>
             </View>
         );

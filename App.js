@@ -153,7 +153,7 @@ export default class App extends PureComponent {
 
           </View>
 
-          {wordCount === 5 ? appAlert('Congratulations...!!', 'Kindly restart the application...!!', this.onOkPressed) : null}
+          {wordCount === 5 ? appAlert('Congratulations...!!', 'Kindly reset the application...!!', this.onOkPressed) : null}
 
         </ImageBackground>
       </View >

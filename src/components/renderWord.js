@@ -26,7 +26,7 @@ export default class RenderWord extends PureComponent {
 const styles = StyleSheet.create({
     textContent: { flex: 2, justifyContent: 'center', paddingLeft: 30 },
     viewContent: { flex: 0.5, flexDirection: 'row' },
-    viewText: { backgroundColor: 'cyan', fontWeight: "bold", fontSize: 20, color: 'black' },
+    viewText: { fontWeight: "bold", fontSize: 30, color: 'black', textDecorationLine: 'underline' },
     viewCircle: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     viewIcon: { flex: 0.5, justifyContent: 'center', alignItems: 'center' }
 
