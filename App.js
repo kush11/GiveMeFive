@@ -1,63 +1,15 @@
 import React, { PureComponent } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, ImageBackground, TouchableOpacity, Button, Alert } from 'react-native';
-import Circle from './circle';
-import * as Progress from 'react-native-progress';
-import Icon from 'react-native-vector-icons/FontAwesome'
-
-const formatData = (data, numColumns) => {
-  const numberOfFullRows = Math.floor(data.length / numColumns);
-
-  let numberOfElementsLastRow = data.length - (numberOfFullRows * numColumns);
-  while (numberOfElementsLastRow !== numColumns && numberOfElementsLastRow !== 0) {
-    data.push({ key: `blank-${numberOfElementsLastRow}`, empty: true });
-    numberOfElementsLastRow++;
-  }
-
-  return data;
-};
-const numColumns = 5;
-let data = [
-  {
-    "id": '1',
-    "word": "P"
-  },
-  {
-    "id": '2',
-    "word": "L"
-  },
-  {
-    "id": '3',
-    "word": "P"
-  },
-  {
-    "id": '4',
-    "word": "T"
-  },
-  {
-    "id": '5',
-    "word": "S"
-  },
-  {
-    "id": '6',
-    "word": "A"
-  },
-  {
-    "id": '7',
-    "word": "C"
-  },
-  {
-    "id": '8',
-    "word": "E"
-  },
-  {
-    "id": '9',
-    "word": "H"
-  },
-  {
-    "id": '10',
-    "word": "D"
-  }
-]
+import { View, StyleSheet, ImageBackground } from 'react-native';
+import { formatData, appAlert, appOkAlert } from './src/functions/appFunction';
+import { data, numColumns } from './src/shared/common';
+import Header from './src/components/header';
+import ProgressBar from './src/components/progressbar';
+import PlayingWords from './src/components/playingWords';
+import TypeWord from './src/components/typeWord';
+import UndoWord from './src/components/undoWord';
+import RenderLetter from './src/components/renderLetter';
+import RenderWord from './src/components/renderWord';
+import Loading from './src/shared/loading';
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -68,54 +20,23 @@ export default class App extends PureComponent {
       addedWord: false,
       showData: [],
       deleted: false,
-      deletedOrder: []
+      deletedOrder: [],
+      spinner: false
     };
   }
 
   addData = (resData, id) => {
     data.forEach((res) => {
-      console.log(res.word);
       if (res.word === resData && res.id === id) {
         res.color = 'red';
         res.disabled = true
       }
-      console.log("after change", data);
     });
     this.setState((prevState, props) => {
       return { clickedData: prevState.clickedData + resData };
     })
 
   }
-
-  renderItem1 = ({ item }) => {
-    if (item.status === 'active') {
-      return (
-        <View style={{ flex: 0.5, flexDirection: 'row' }}>
-          <View style={{ flex: 2, justifyContent: 'center', paddingLeft: 30 }}>
-            <Text style={{ backgroundColor: 'cyan', fontWeight: "bold", fontSize: 20, color: 'black' }}>{item.word}</Text>
-          </View>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Circle word={item.count} color={'red'} />
-          </View>
-          <View style={{ flex: 0.5, justifyContent: 'center', alignItems: 'center' }}>
-            <Icon size={25} name="close" color={'red'} onPress={() => this.deleteWord(item)}></Icon>
-          </View>
-        </View>
-      )
-    }
-  }
-
-  renderItem = ({ item }) => {
-    return (
-      <TouchableOpacity onPress={() => {
-        // alert(item.word);
-        this.addData(item.word, item.id)
-      }}
-      >
-        <Circle word={item.word} />
-      </TouchableOpacity>
-    );
-  };
 
   cancelled = () => {
     this.setState({
@@ -124,36 +45,15 @@ export default class App extends PureComponent {
     })
   }
 
-  onDuplicateEnter = () => {
-    this.setState((prevState, props) => {
-      return {
-        clickedData: '',
-      };
-    })
-  }
+  onDuplicateEnter = () => { this.setState((prevState, props) => { return { clickedData: '', }; }) }
 
   pushData = () => {
     let data = this.state.showData.filter(item => item.word === this.state.clickedData);
-
     if (this.state.wordCount === 5) {
-      Alert.alert(
-        'You need to restart the application to proceed...!!',
-        'Restart the application...!!',
-        [
-          { text: 'OK', onPress: this.onOkPressed },
-        ],
-        { cancelable: false }
-      )
+      appOkAlert('You need to restart the application to proceed...!!', 'Restart the application...!!', this.onOkPressed)
     }
     else if (data.length !== 0) {
-      Alert.alert(
-        'Duplicates are not allowed...!!',
-        'Enter next word...!!',
-        [
-          { text: 'OK', onPress: this.onDuplicateEnter },
-        ],
-        { cancelable: false }
-      )
+      appOkAlert('Duplicates are not allowed...!!', 'Enter next word...!!', this.onDuplicateEnter)
     }
     else {
       let wordAdd = {
@@ -195,107 +95,66 @@ export default class App extends PureComponent {
     })
   }
   onOkPressed = () => {
-    this.setState((prevState, props) => {
-      return {
-        wordCount: 0,
-        clickedData: '',
-        showData: []
-      };
-    });
+    this.setState({ spinner: true });
+    setTimeout(() => {
+      this.setState((prevState, props) => {
+        return {
+          wordCount: 0,
+          clickedData: '',
+          showData: [],
+          spinner: false
+        };
+      });
+    }, 1000);
+
   }
+  renderWord = ({ item }) => {
+    if (item.status === 'active') {
+      return (<RenderWord text={item.word} word={item.count} delete={() => this.deleteWord(item)} />)
+    }
+  }
+  renderLetter = ({ item }) => {
+    return (<RenderLetter addData={() => this.addData(item.word, item.id)} word={item.word} />);
+  };
 
   render() {
+    const { showData, clickedData, wordCount, deleted, spinner } = this.state;
+    if (spinner) {
+      return (<Loading />)
+    }
     return (
       <View style={styles.container}>
-        <ImageBackground
-          source={require('./assets/background.png')} style={{ width: '100%', height: '100%' }}>
-          <View style={styles.header}>
-            <Text style={{ fontSize: 35, color: 'red' }}>Give me Five</Text>
-          </View>
-          <View>
-            <Progress.Bar
-              style={styles.progBar}
-              progress={this.state.showData.filter((item) => item.status === 'active').length / 5}
-              width={null}
-              color="red"
-              unfilledColor="#ffffff"
-            />
-          </View>
-          <View style={styles.center}>
-            <View style={styles.top}>
-              <FlatList
-                data={formatData(data, numColumns)}
-                renderItem={this.renderItem}
-                numColumns={numColumns}
-                keyExtra ctor={item => item.id}
-              />
-            </View>
-            {this.state.clickedData !== '' ?
-              <View style={{ flex: 0.5, flexDirection: 'row', paddingLeft: 50 }}>
-                <View style={styles.bottom}>
-                  <Text style={{ fontWeight: "bold", fontSize: 20 }}>{`${this.state.clickedData}`}</Text>
-                </View>
-                <View style={{
-                  flexDirection: 'row',
-                  flex: 2,
-                  justifyContent: 'space-between'
-                }}>
-                  <View style={{ flex: 1 }}>
-                    <TouchableOpacity
-                      onPress={() => this.cancelled()}
-                      style={{ flex: 1, marginRight: 5, backgroundColor: 'red', borderRadius: 12, borderWidth: 2, justifyContent: 'center', alignItems: 'center' }}
-                    >
-                      <Text>Cancel</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <TouchableOpacity
-                      style={{ flex: 1, backgroundColor: 'green', borderRadius: 12, borderWidth: 2, justifyContent: 'center', alignItems: 'center' }}
-                      onPress={() => this.pushData()}
-                    >
-                      <Text>OK</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+        <ImageBackground source={require('./assets/background.png')} style={styles.imgBackground}>
 
-              </View> : null
-            }
+          <Header />
+
+          <ProgressBar progress={showData.filter((item) => item.status === 'active').length / 5} />
+
+          <View style={styles.center}>
+
+            <PlayingWords
+              data={formatData(data, numColumns)}
+              renderItem={this.renderLetter}
+              numColumns={numColumns}
+              keyExtractor={item => item.id} />
+
+            {clickedData !== '' ? <TypeWord text={clickedData} cancel={this.cancelled} push={this.pushData} /> : null}
+
             <View style={{ flex: 5.5 }}>
-              <FlatList
-                extraData={this.state.wordCount}
-                data={this.state.showData}
-                renderItem={this.renderItem1}
-                keyExtractor={item => item.key}
-              />
+
+              <PlayingWords extraData={wordCount}
+                data={showData}
+                renderItem={this.renderWord}
+                keyExtractor={item => item.key} />
+
             </View>
-            {this.state.deleted ?
-              <TouchableOpacity
-                style={{
-                  height: 60,
-                  width: 60,
-                  backgroundColor: 'gray',
-                  position: "absolute",
-                  bottom: 20,
-                  right: 20,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 30,
-                }}
-                onPress={() => this.undoData()}
-              >
-                <Icon size={25} name="undo" color={'red'} onPress={() => this.undoData()}></Icon>
-                <Text style={{ size: 30 }}>Undo</Text>
-              </TouchableOpacity> : null}
+
+            {deleted ? <UndoWord undoWord={this.undoData} /> : null}
+
           </View>
-          {this.state.wordCount === 5 ? Alert.alert(
-            'Successfully Submitted...!!',
-            'Restart the application...!!',
-            [
-              { text: 'Cancel', onPress: () => console.log('Cancel Pressed!') },
-              { text: 'OK', onPress: this.onOkPressed },
-            ],
-            { cancelable: false }
-          ) : null}
+
+          {wordCount === 5 ? appAlert('Congratulations...!!', 'Kindly restart the application...!!', this.onOkPressed) : null}
+
         </ImageBackground>
       </View >
     );
@@ -303,29 +162,11 @@ export default class App extends PureComponent {
 }
 
 const styles = StyleSheet.create({
+  imgBackground: { width: '100%', height: '100%' },
   container: {
     flex: 1
   },
-  progBar: {
-    borderRadius: 0,
-    borderWidth: 0,
-    marginLeft: -1,
-    padding: 0
-  },
-  header: {
-    flex: 0.5,
-    paddingLeft: 15
-  },
   center: {
     flex: 5
-  },
-  top: {
-    flex: 2,
-    paddingVertical: 5
-  },
-  bottom: {
-    flex: 2.5,
-    justifyContent: "center",
-    alignItems: 'center'
-  },
+  }
 })
